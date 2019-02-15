@@ -8,13 +8,13 @@ Date: 7 Feb 2019
 %}
 
 SCREEN_SIZE = [1280 800];  % window size to show in pixesl [w h]
-PIXELS_PER_MM = 50;        % depends on viewing distance and monitor res.
+PIXELS_PER_MM = 20;        % depends on viewing distance and monitor res.
 
 BACKGROUND_COLOR  = 0;
 REF_COLOR = 100;           % level of reference spot [0,255]
 
 STIMULUS_RADIUS   = 0.5/2;    % mm 
-STIMULUS_DURARION = 200/1000;  % seconds
+STIMULUS_DURARION = 500/1000;  % seconds
 
 ISI = [0.4 0.6]; % inter-stimulus interval is a random in this range seconds
 
@@ -32,17 +32,6 @@ imshow(BACKGROUND_COLOR * ones(SCREEN_SIZE(2), SCREEN_SIZE(1), 'uint8'), 'Border
 set(gcf,'MenuBar','none');
 movegui(gcf, 'northwest');
 
-r = STIMULUS_RADIUS * PIXELS_PER_MM;
-ref_image = BACKGROUND_COLOR * ones(r*2, r*2, 'uint8');
-for x = -r:r
-    for y = -r:r
-        if x^2 + y^2 < r^2
-            ref_image(r + y + 1, r + x + 1) = uint8(REF_COLOR);
-        end
-    end
-end
-image('XData',cx-r, 'YData',cy-r, 'CData',ref_image);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % setup a zest state for each location
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,6 +42,7 @@ for xy = LOCATIONS.'
     p = Presenter(x_pix, y_pix, ...
                   round(STIMULUS_RADIUS*PIXELS_PER_MM), ...
                   BACKGROUND_COLOR, ...
+                  REF_COLOR, cx, cy, ...
                   STIMULUS_DURARION);
         % prior has leading zeros for values below BACKGROUND_COLOR
         % plus a little bit (to avoid floor effects), and uniform above that
