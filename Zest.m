@@ -109,7 +109,11 @@ classdef Zest < handle
             likelihood = obj.setgetLikelihood;
             if seen
                 obj.maxSeenCount = obj.maxSeenCount + stim == obj.maxStimulus;
-                new_pdf = curr_pdf .* (1 - likelihood(stim_index, :));
+                if Zest.twoAFC
+                    new_pdf = curr_pdf .* (1.5 - likelihood(stim_index, :));
+                else
+                    new_pdf = curr_pdf .* (1.0 - likelihood(stim_index, :));
+                end
             else
                 obj.minNotSeenCount = obj.minNotSeenCount + stim == obj.minStimulus;
                 new_pdf = curr_pdf .* likelihood(stim_index, :);
