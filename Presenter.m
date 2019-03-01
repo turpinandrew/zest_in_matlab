@@ -15,14 +15,17 @@ classdef Presenter < handle
         duration      % stimulus on time in seconds
         radius        % radius of circular stimuli
         background_color
-        ref_color
-        ref_x
-        ref_y
-        ref_image
+        ref_color     % color of the reference spot
+        ref_x         % x location of the reference spot
+        ref_y         % y location of the reference spot
+        ref_image     % the image of the reference spot
         key_pressed   % latest key pressed
     end % properties
    
     methods (Static)
+        % Draw a circle of radius radius at (cs,cy) with 
+        % color color on a background color back_color.
+        % Returns and uint8 matrix that is size 2*radius by 2*radius
         function c = circle(radius, cx, cy, back_color, color)
             im = back_color * ones(2*radius, 2*radius);
             for x = -radius:radius
@@ -55,6 +58,7 @@ classdef Presenter < handle
             obj.background_color = background_color;     
             obj.ref_x = round(ref_x - radius/2);
             obj.ref_y = round(ref_y - radius/2);
+
             obj.blank_image = background_color * ones(2*radius, 2*radius, 'uint8');
             obj.ref_image = Presenter.circle(radius, radius, radius, background_color, ref_color);
         end % Presenter() constructor

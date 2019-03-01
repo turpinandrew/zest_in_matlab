@@ -19,8 +19,8 @@ STIMULUS_DURARION = 500/1000;  % seconds
 ISI = [0.4 0.6]; % inter-stimulus interval is a random in this range seconds
 
   % locations in mm
-LOCATIONS = [3 0;2.25 0;1.5 0;0.75 0;0 0;-0.75 0;-1.5 0;-2.25 0;-3 0];
-%LOCATIONS = [1 0;-1 0];
+%LOCATIONS = [3 0;2.25 0;1.5 0;0.75 0;0 0;-0.75 0;-1.5 0;-2.25 0;-3 0];
+LOCATIONS = [1 0;-1 0];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % open window for stimuli and put up reference stim
