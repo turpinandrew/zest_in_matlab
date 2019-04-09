@@ -16,8 +16,8 @@ Date: 7 Feb 2019
 classdef Zest < handle
     properties (Constant)
         twoAFC = true;      % true for two alternate forced choice, false for yes/no
-        stopType = 'N'      % N = fixed number of pres | S = stdev of pdf | H = entropy of pdf
-        stopValue = 10      % Value for num prs (N), stdev (S) of Entropy (H)
+        stopType = 'S'      % N = fixed number of pres | S = stdev of pdf | H = entropy of pdf
+        stopValue = 4      % Value for num prs (N), stdev (S) of Entropy (H)
         maxStimulus = 255   % Highest value to present
         minNotSeenLimit = 2 % Will terminate if minLimit value not seen this many times
         maxSeenLimit    = 2 % Will terminate if maxLimit value seen this many times
