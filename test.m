@@ -22,6 +22,11 @@ ISI = [0.4 0.6]; % inter-stimulus interval is a random in this range seconds
 %LOCATIONS = [3 0;2.25 0;1.5 0;0.75 0;0 0;-0.75 0;-1.5 0;-2.25 0;-3 0];
 LOCATIONS = [1 0;-1 0];
 
+    % set the min and max for the pdf domain for each X
+DOMAIN_X_VALUES = [3 2.25 1.5 0.75 0 -0.75 -1.5 -2.25 -3];
+DOMAIN_MINS = [114	101	94	94	100	100	108	121	140	94];
+DOMAIN_MAXS = [168	137	118	106	100	113	132	159	202	202];
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % open window for stimuli and put up reference stim
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,12 +49,19 @@ for xy = LOCATIONS.'
                   BACKGROUND_COLOR, ...
                   REF_COLOR, cx, cy, ...
                   STIMULUS_DURARION);
-        % prior has leading zeros for values below BACKGROUND_COLOR
-        % plus a little bit (to avoid floor effects), and uniform above that
-    prior = ones(1,256);
+              
+        % find the domain max and min for this x value
+        % add 5 at each end to avoid floor/ceiling effects
+    [v, closest_i] = min(abs(DOMAIN_X_VALUES - xy(1,1)));
+    d_min = DOMAIN_MINS(closest_i) - 5;
+    d_max = DOMAIN_MAXS(closest_i) + 5;
+    domain = d_min:d_max
+    
+        % prior is uniform in the range dmin:d_max
+    prior = ones(1, d_max - d_min + 1);
     prior = prior ./ sum(prior);
     
-    states = [states, Zest(prior, BACKGROUND_COLOR, p)];
+    states = [states, Zest(domain, prior, BACKGROUND_COLOR, p)];
 end
 
 

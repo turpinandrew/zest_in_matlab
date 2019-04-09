@@ -16,7 +16,6 @@ Date: 7 Feb 2019
 classdef Zest < handle
     properties (Constant)
         twoAFC = true;      % true for two alternate forced choice, false for yes/no
-        domain = 0:255      % possible threshold values
         stopType = 'N'      % N = fixed number of pres | S = stdev of pdf | H = entropy of pdf
         stopValue = 10      % Value for num prs (N), stdev (S) of Entropy (H)
         maxStimulus = 255   % Highest value to present
@@ -32,7 +31,11 @@ classdef Zest < handle
 
         minStimulus  % Lowest value to present
 
+        domain       % domain: possible threshold values
+
         pdfs = [];   % matrix of pdfs in the procedure, one row per step
+        
+        likelihood 
         
         maxSeenCount = 0;
         minNotSeenCount = 0;
@@ -43,8 +46,8 @@ classdef Zest < handle
     methods (Static)
         % return stdev of last row of obj.pds
         function res = stdev(obj)
-            Epsq = sum(obj.pdfs(end,:) .* Zest.domain .* Zest.domain);
-            Ep_sq = sum(obj.pdfs(end,:) .* Zest.domain) ^2;
+            Epsq = sum(obj.pdfs(end,:) .* obj.domain .* obj.domain);
+            Ep_sq = sum(obj.pdfs(end,:) .* obj.domain) ^2;
             res = sqrt(Epsq - Ep_sq);
         end
         
@@ -53,40 +56,35 @@ classdef Zest < handle
             is = find(obj.pdfs(end, :));
             res = -sum(obj.pdfs(end, is) * log2(obj.pdfs(end, is)));
         end
-        
-        % likelihood[s,t] is likelihood of seeing s given t is true thresh
-        % (Pr(s|t) where s and t are indexes into domain)
-        % We only want to compute it once, hence this persistent thingy
-        function out = setgetLikelihood(obj)        
-            persistent likelihood   
-            if isempty(likelihood)
-                if Zest.twoAFC; lower = 0.53; else; lower = 0.03; end;
-                likelihood = zeros(length(Zest.domain), length(Zest.domain));
-                for i_t = 1:length(Zest.domain)
-                    pd = makedist('Normal','mu',Zest.domain(i_t),'sigma',1);
-                    for i_s = 1:length(Zest.domain)
-                        likelihood(i_s, i_t) = lower + (1-lower-0.03)*(1-cdf(pd, Zest.domain(i_s)));
-                    end
-                end
-            end
-            out = likelihood;
-        end % makeLikelihood()
     end % methods(Static)
 
     methods
         % Constructor: set pdf=prior, and store present for later
+        % domain: possible threshold values
         % prior: array of probabilities of length domain (sums to 1)
         % min_stimuls: the minimum to present (usually the bacground color)
         % present: a Presenter object that has a show() method
-        function obj=Zest(prior, min_stimulus, present)
-            assert(length(prior) == length(Zest.domain),...
+        function obj=Zest(domain, prior, min_stimulus, present)
+            assert(length(prior) == length(domain),...
                 'Zest: Prior wrong length in call to  constructor');
             assert(ismethod(present, 'show'), ...
                 'Zest: Present object must contain show method');
+            obj.domain = domain      
             obj.pdfs = prior;
             obj.minStimulus = min_stimulus;
             obj.present = present;
-            likelihood = obj.setgetLikelihood;  % force like calc.
+        
+                % likelihood[s,t] is likelihood of seeing s given t is true thresh
+                % (Pr(s|t) where s and t are indexes into domain)
+                % We only want to compute it once, hence this persistent thingy
+            if Zest.twoAFC; lower = 0.53; else; lower = 0.03; end;
+            obj.likelihood = zeros(length(obj.domain), length(obj.domain));
+            for i_t = 1:length(obj.domain)
+                pd = makedist('Normal','mu',obj.domain(i_t),'sigma',1);
+                for i_s = 1:length(obj.domain)
+                    obj.likelihood(i_s, i_t) = lower + (1-lower-0.03)*(1-cdf(pd, obj.domain(i_s)));
+                end
+            end
         end % constructor()
         
         % Use the present object to show the stimulus and get a response.
@@ -95,10 +93,10 @@ classdef Zest < handle
         function step(obj)
             curr_pdf = obj.pdfs(end, :); 
             if obj.stimChoice == 'mean'
-                expectation = sum(curr_pdf .* Zest.domain);
+                expectation = sum(curr_pdf .* obj.domain);
                 s = min(max(obj.minStimulus, expectation), obj.maxStimulus);
-                [v, stim_index] = min(abs(Zest.domain - s));
-                stim = Zest.domain(stim_index);
+                [v, stim_index] = min(abs(obj.domain - s));
+                stim = obj.domain(stim_index);
             else 
                 error('median and mode unimplemented in zest class')
             end
@@ -106,17 +104,16 @@ classdef Zest < handle
             
             seen = obj.present.show(stim);
             
-            likelihood = obj.setgetLikelihood;
             if seen
                 obj.maxSeenCount = obj.maxSeenCount + stim == obj.maxStimulus;
                 if Zest.twoAFC
-                    new_pdf = curr_pdf .* (1.5 - likelihood(stim_index, :));
+                    new_pdf = curr_pdf .* (1.5 - obj.likelihood(stim_index, :));
                 else
-                    new_pdf = curr_pdf .* (1.0 - likelihood(stim_index, :));
+                    new_pdf = curr_pdf .* (1.0 - obj.likelihood(stim_index, :));
                 end
             else
                 obj.minNotSeenCount = obj.minNotSeenCount + stim == obj.minStimulus;
-                new_pdf = curr_pdf .* likelihood(stim_index, :);
+                new_pdf = curr_pdf .* obj.likelihood(stim_index, :);
             end
             new_pdf = new_pdf ./ sum(new_pdf);
             obj.pdfs = [obj.pdfs ; new_pdf];
@@ -139,14 +136,14 @@ classdef Zest < handle
         % return current threshold estimate of obj
         function f = final(obj) 
             if obj.stimChoice == 'mean'
-                f = sum(obj.pdfs(end,:) .* Zest.domain);
+                f = sum(obj.pdfs(end,:) .* obj.domain);
             elseif obj.stimChoice == 'mode'
                 [v, i] = max(obj.pdfs(end, :));
-                f = Zest.domain(i);
+                f = obj.domain(i);
             elseif obj.stimChoice == 'median'
                 c = cumsum(obj.pdfs(end, :));
                 [v, i] = min(abs(c - 0.5));
-                f = Zest.domain(i);
+                f = obj.domain(i);
             end
         end % final()
 

@@ -99,7 +99,7 @@ classdef Presenter < handle
                 % 1,2,3 for "lower than ref", other for 'higher than ref'
             seen = ~ismember(obj.key_pressed, ['1' '2' '3']);
 
-            obj.msg = sprintf('x= %4d y= %4d Stim= %4.2f seen= %d',obj.x, obj.y, stim_value, seen);
+            obj.msg = sprintf('x= %4d y= %4d Stim= %4.2f higher= %d',obj.x, obj.y, stim_value, seen);
         end % show()
         
         function s = getMsg(obj)
