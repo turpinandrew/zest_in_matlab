@@ -80,7 +80,7 @@ classdef Zest < handle
             if Zest.twoAFC; lower = 0.53; else; lower = 0.03; end;
             obj.likelihood = zeros(length(obj.domain), length(obj.domain));
             for i_t = 1:length(obj.domain)
-                pd = makedist('Normal','mu',obj.domain(i_t),'sigma',1);
+                pd = makedist('Normal','mu',obj.domain(i_t),'sigma',0.1);
                 for i_s = 1:length(obj.domain)
                     obj.likelihood(i_s, i_t) = lower + (1-lower-0.03)*(1-cdf(pd, obj.domain(i_s)));
                 end
