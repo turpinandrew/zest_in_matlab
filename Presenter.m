@@ -77,7 +77,7 @@ classdef Presenter < handle
         function seen = show(obj, stim_value)
                 % set up stim circle
             stim_image = Presenter.circle(obj.radius, obj.radius, obj.radius, obj.background_color, stim_value);
-            
+            fprintf('stim= %3.0f ', stim_value);
             set(gcf,'KeyPressFcn',@obj.keyHandler);
             obj.key_pressed = [];
             
@@ -96,10 +96,10 @@ classdef Presenter < handle
                 image('XData',x, 'YData',y, 'CData',obj.blank_image);      
             end
 
-                % 1,2,3 for "lower than ref", other for 'higher than ref'
+                % 1,2,3 for "i see it brighter than ref", other for 'i see it dimmer than ref'
             seen = ~ismember(obj.key_pressed, ['1' '2' '3']);
 
-            obj.msg = sprintf('x= %4d y= %4d Stim= %4.2f higher= %d',obj.x, obj.y, stim_value, seen);
+            obj.msg = sprintf('x= %4d y= %4d Stim= %4.0f dimmer= %d',obj.x, obj.y, stim_value, seen);
         end % show()
         
         function s = getMsg(obj)

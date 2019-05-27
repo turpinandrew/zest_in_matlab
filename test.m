@@ -19,13 +19,15 @@ STIMULUS_DURARION = 500/1000;  % seconds
 ISI = [0.4 0.6]; % inter-stimulus interval is a random in this range seconds
 
   % locations in mm
-LOCATIONS = [-3 0;-2.25 0;-1.5 0;-0.75 0;0 0;0.75 0;1.5 0;2.25 0;3 0];
-%LOCATIONS = [3 0;-3 0];
+%LOCATIONS = [-3 0;-2.25 0;-1.5 0;-0.75 0;0 0;0.75 0;1.5 0;2.25 0;3 0];
+LOCATIONS = [3 0;-3 0];
 
     % set the min and max for the pdf domain for each X
 DOMAIN_X_VALUES = [3 2.25 1.5 0.75 0 -0.75 -1.5 -2.25 -3];
-DOMAIN_MINS = [114	101	94	94	100	100	108	121	140	94];
-DOMAIN_MAXS = [168	137	118	106	100	113	132	159	202	202];
+%DOMAIN_MINS = [114	101	94	94	100	100	108	121	140	94];
+%DOMAIN_MAXS = [168	137	118	106	100	113	132	159	202	202];
+DOMAIN_MINS = [30	30 30 30 30 30 30 30 	30];
+DOMAIN_MAXS = [130	130 130 130 130 130 130 130 	130];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % open window for stimuli and put up reference stim
@@ -76,7 +78,8 @@ while length(unfinished) > 0
     z = states(unfinished(i));
     fprintf('Loc: %2d ', unfinished(i));
     z.step();
-    fprintf('%s\n', z.getPresentMsg());
+    fprintf('%s ', z.getPresentMsg());
+    fprintf('stdev= %6.4f\n', Zest.stdev(z));
     if z.stop()
         fprintf('finished location %d\n', unfinished(i));
         unfinished(i) = [];
